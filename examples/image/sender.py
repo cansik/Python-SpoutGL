@@ -9,8 +9,10 @@ SEND_WIDTH = 256
 SEND_HEIGHT = 256
 SENDER_NAME = "SpoutGL-test"
 
+
 def randcolor():
     return randint(0, 255)
+
 
 with SpoutGL.SpoutSender() as sender:
     sender.setSenderName(SENDER_NAME)
@@ -21,10 +23,15 @@ with SpoutGL.SpoutSender() as sender:
         pixels = bytes(islice(cycle([randcolor(), randcolor(), randcolor(), 255]), SEND_WIDTH * SEND_HEIGHT * 4))
 
         result = sender.sendImage(pixels, SEND_WIDTH, SEND_HEIGHT, GL.GL_RGBA, False, 0)
+
+        # This fixes the CPU sender (first frame is discarded)
+        # More information: https://github.com/jlai/Python-SpoutGL/issues/15
+        sender.setCPUshare(True)
+
         print("Send result", result)
-        
+
         # Indicate that a frame is ready to read
         sender.setFrameSync(SENDER_NAME)
-        
+
         # Wait for next send attempt
-        time.sleep(1./TARGET_FPS)
+        time.sleep(1. / TARGET_FPS)
